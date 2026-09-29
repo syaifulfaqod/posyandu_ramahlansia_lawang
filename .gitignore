@@ -1,0 +1,41 @@
+# dependencies
+/node_modules
+
+# production build
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (keep .env.example for reference)
+.env*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+
+# zip & backup files (tidak perlu di repo)
+*.zip
+*.bak
+
+# temp & test files
+/temp/
+/kartu_bantu_temp*/
+/kartu_bantu_test/
+/.temp_backend_build/
+
+# data files
+*.xlsx
+
+# server build output
+/server/dist/
+
+# old Next.js files (bisa dihapus)
+/src/app/
