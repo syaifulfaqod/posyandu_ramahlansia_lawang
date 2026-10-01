@@ -12,14 +12,24 @@ router.get("/login-check", async (req, res) => {
     const email = req.query.email as string;
     if (!email) return res.status(400).json({ error: "Email is required" });
 
-    const [existingUser] = await db.select().from(user).where(eq(user.email, email));
+    const [existingUser] = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, email));
     if (!existingUser) return res.json({ isLocked: false, attempts: 0 });
 
-    res.json({ isLocked: existingUser.isLocked, attempts: existingUser.failedLoginAttempts });
+    res.json({
+      isLocked: existingUser.isLocked,
+      attempts: existingUser.failedLoginAttempts,
+    });
   } catch (error: any) {
     res.status(500).json({
       error: error.message,
-      detail: error.cause?.message || error.cause?.sqlMessage || error.sqlMessage || String(error.cause || error)
+      detail:
+        error.cause?.message ||
+        error.cause?.sqlMessage ||
+        error.sqlMessage ||
+        String(error.cause || error),
     });
   }
 });
@@ -29,22 +39,32 @@ router.post("/login-failed", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email is required" });
-
-    const [existingUser] = await db.select().from(user).where(eq(user.email, email));
+    // [TEST 01 - READABILITY]
+    // Status: SESUAI
+    // Temuan: Penamaan variabel 'existingUser' dan 'isAdminKkn' sangat jelas,
+    // menggunakan standar camelCase, dan langsung merepresentasikan kegunaannya.
+    const [existingUser] = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, email));
     if (!existingUser) return res.json({ success: true });
 
-    const isAdminKkn = existingUser.role === 'Admin' && existingUser.name === 'KKN RAMAH LANSIA';
+    const isAdminKkn =
+      existingUser.role === "Admin" && existingUser.name === "KKN RAMAH LANSIA";
     if (!isAdminKkn) {
       const newAttempts = (existingUser.failedLoginAttempts || 0) + 1;
       const isLocked = newAttempts >= 5;
-      await db.update(user).set({ 
-        failedLoginAttempts: newAttempts,
-        isLocked: isLocked
-      }).where(eq(user.id, existingUser.id));
-      
+      await db
+        .update(user)
+        .set({
+          failedLoginAttempts: newAttempts,
+          isLocked: isLocked,
+        })
+        .where(eq(user.id, existingUser.id));
+
       return res.json({ success: true, isLocked, attempts: newAttempts });
     }
-    
+
     res.json({ success: true, isLocked: false });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -57,7 +77,10 @@ router.post("/login-success", async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email is required" });
 
-    await db.update(user).set({ failedLoginAttempts: 0 }).where(eq(user.email, email));
+    await db
+      .update(user)
+      .set({ failedLoginAttempts: 0 })
+      .where(eq(user.email, email));
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -67,7 +90,10 @@ router.post("/login-success", async (req, res) => {
 // Endpoint untuk membuka kunci (unlock)
 router.post("/:id/unlock", async (req, res) => {
   try {
-    await db.update(user).set({ isLocked: false, failedLoginAttempts: 0 }).where(eq(user.id, req.params.id));
+    await db
+      .update(user)
+      .set({ isLocked: false, failedLoginAttempts: 0 })
+      .where(eq(user.id, req.params.id));
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
